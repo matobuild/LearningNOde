@@ -24,8 +24,8 @@ app.all("*", (req, res, next) => {
   //   data: `Path ${req.originalUrl} not found in the server`,
   // })
   const err = new Error(`Path ${req.originalUrl} not found in the server`)
-  // err.status = "fail"
-  // err.statusCode = 404
+  err.status = "fail"
+  err.statusCode = 404
   next(err)
 })
 
