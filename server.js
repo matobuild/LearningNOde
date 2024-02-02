@@ -1,6 +1,6 @@
 const express = require("express")
 const fs = require("fs")
-const { getUserById, deleteUserById } = require("./service/userService")
+const { getUserById, deleteUserById } = require("./service/customerService")
 
 const app = express()
 const port = 8080
