@@ -2,10 +2,20 @@ const pool = require("../db/pool")
 const errors = require("../utils/errors")
 const encrypt = require("../utils/encrypt")
 
-exports.signUp = async (req, res) => {
+exports.signUp = async (req, res, next) => {
   try {
     let body = req.body
     console.log("BODY", body)
+    let sqlCheckDupUser = `SELECT * FROM public.users where username = $1`
+
+    let responseCheckDupUser = await pool.query(sqlCheckDupUser, [
+      body.username,
+    ])
+    console.log("responseCheckDupUser", responseCheckDupUser)
+    if (responseCheckDupUser.rowCount > 0) {
+      return res.status(400).json({ status: "fail", data: "User is duplicate" })
+    }
+
     let sql = `INSERT INTO public.users 
     ( first_name, last_name, email,username, user_password)
     VALUES($1, $2, $3, $4, $5);`
@@ -19,9 +29,45 @@ exports.signUp = async (req, res) => {
     ])
     console.log(response)
     if (response.rowCount > 0) {
-      res.status(200).json({ status: "success", data: "Insert data success" })
+      const token = await encrypt.generateJWT({ username: body.username })
+      return res
+        .status(200)
+        .json({ status: "success", token: token, data: "Insert data success" })
     } else {
-      res.status(400).json({ status: "fail", data: "Insert data fail" })
+      return res.status(400).json({ status: "fail", data: "Insert data fail" })
+    }
+  } catch (error) {
+    console.log(error.message)
+    errors.mapError(500, "Internal Server Error", next)
+  }
+}
+
+exports.singIn = async (req, res, next) => {
+  try {
+    let body = req.body
+    console.log("BODY", body)
+    let sql = `SELECT * FROM public.users where username = $1`
+    let response = await pool.query(sql, [body.username])
+    console.log(response)
+    if (response.rowCount > 0) {
+      const isPwdValid = await encrypt.comparePassword(
+        body.password,
+        response.rows[0].user_password
+      )
+      if (isPwdValid) {
+        const token = await encrypt.generateJWT({ username: body.username })
+        return res.status(200).json({
+          status: "success",
+          token: token,
+          data: "Login success",
+        })
+      } else {
+        return res
+          .status(401)
+          .json({ status: "fail", data: "Password invalid" })
+      }
+    } else {
+      return res.status(400).json({ status: "fail", data: "User not found" })
     }
   } catch (error) {
     console.log(error.message)

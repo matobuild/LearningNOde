@@ -23,5 +23,6 @@ router
   .delete(customerService.deleteCustomerById)
 
 router.route("/users/").post(userService.signUp)
+router.route("/users/login").post(userService.singIn)
 
 module.exports = router
