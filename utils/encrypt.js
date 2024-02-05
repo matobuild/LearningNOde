@@ -21,3 +21,8 @@ exports.generateJWT = async (data) => {
   const token = jwt.sign(data, process.env.JWT_SECRET, { expiresIn: 60 * 60 })
   return token
 }
+
+exports.verifyToken = async (token) => {
+  const result = jwt.verify(token, process.env.JWT_SECRET)
+  return result
+}

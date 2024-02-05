@@ -74,3 +74,26 @@ exports.singIn = async (req, res, next) => {
     errors.mapError(500, "Internal Server Error", next)
   }
 }
+
+exports.verifyToken = async (req, res, next) => {
+  // 1.check token
+  console.log(req.headers.authorization)
+  if (req.headers.authorization == null) {
+    errors.mapError(401, "Token undefine", next)
+  }
+
+  const token = req.headers.authorization.split(" ")[1]
+
+  if (!token) {
+    errors.mapError(401, "Token undefine", next)
+  }
+
+  // 2. verify token
+  try {
+    await encrypt.verifyToken(token)
+  } catch (error) {
+    console.log(error.message)
+    errors.mapError(401, "Token invalid ", next)
+  }
+  next()
+}

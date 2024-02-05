@@ -8,7 +8,7 @@ const router = express.Router()
 
 router
   .route("/customers/")
-  .get(customerService.getAllCustomers)
+  .get(userService.verifyToken, customerService.getAllCustomers)
   .post(customerService.createCustomer)
 router
   .route("/customers/:id")
