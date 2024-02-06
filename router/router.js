@@ -9,18 +9,19 @@ const router = express.Router()
 router
   .route("/customers/")
   .get(userService.verifyToken, customerService.getAllCustomers)
-  .post(customerService.createCustomer)
+  .post(userService.verifyToken, customerService.createCustomer)
 router
   .route("/customers/:id")
   .get(
+    userService.verifyToken,
     // check middleware multiple times
     customerService.checkID2,
     customerService.checkID2,
     customerService.checkID2,
     customerService.getCustomerById
   )
-  .patch(customerService.updateCustomerById)
-  .delete(customerService.deleteCustomerById)
+  .patch(userService.verifyToken, customerService.updateCustomerById)
+  .delete(userService.verifyToken, customerService.deleteCustomerById)
 
 router.route("/users/").post(userService.signUp)
 router.route("/users/login").post(userService.singIn)
