@@ -1,9 +1,9 @@
 const express = require("express")
 const morgan = require("morgan")
 const dotenv = require("dotenv")
-
 const router = require("./router/router")
 const errors = require("./utils/errors")
+const rateLimit = require("express-rate-limit")
 
 const app = express()
 
@@ -16,6 +16,14 @@ app.use(express.json())
 app.use(morgan("dev"))
 // get static file from public folder
 app.use(express.static("./public"))
+
+//set app limit request limit
+const limiter = rateLimit({
+  max: 10,
+  windowMs: 15 * 60 * 1000,
+  message: "Too many requests",
+})
+app.use("/api", limiter)
 
 app.use("/api/v1", router)
 app.all("*", (req, res, next) => {
