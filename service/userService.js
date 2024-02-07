@@ -61,11 +61,18 @@ exports.singIn = async (req, res, next) => {
           role: response.rows[0].roles,
           userId: response.rows[0].id,
         })
-        return res.status(200).json({
-          status: "success",
-          token: token,
-          data: "Login success",
-        })
+        return res
+          .status(200)
+          .cookie("jwt", token, {
+            expires: new Date(Date.now() + 60 * 60 * 24 * 1000),
+            httpOnly: true,
+            secure: true,
+          })
+          .json({
+            status: "success",
+            token: token,
+            data: "Login success",
+          })
       } else {
         return res
           .status(401)
