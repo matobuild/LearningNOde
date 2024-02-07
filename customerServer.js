@@ -5,6 +5,7 @@ const router = require("./router/router")
 const errors = require("./utils/errors")
 const rateLimit = require("express-rate-limit")
 const helmet = require("helmet")
+const hpp = require("hpp")
 const app = express()
 
 dotenv.config({ path: "./config.env" })
@@ -13,6 +14,11 @@ const port = process.env.PORT || 8080
 console.log(process.env.USERNAME)
 
 app.use(helmet())
+app.use(
+  hpp({
+    whitelist: ["customerId"],
+  })
+)
 app.use(express.json({ limit: "100kb" }))
 app.use(morgan("dev"))
 // get static file from public folder
