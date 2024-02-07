@@ -111,6 +111,28 @@ exports.updateUser = async (req, res, next) => {
   }
 }
 
+exports.deleteUser = async (req, res, next) => {
+  try {
+    let body = req.body
+    console.log("BODY", body)
+    let sql = `DELETE FROM public.users
+    WHERE id=$1`
+
+    let response = await pool.query(sql, [req.user.userId])
+    if (response.rowCount > 0) {
+      return res.status(200).json({
+        status: "success",
+        data: "Delete success",
+      })
+    } else {
+      return res.status(400).json({ status: "fail", data: "User not found" })
+    }
+  } catch (error) {
+    console.log(error.message)
+    errors.mapError(500, "Internal Server Error", next)
+  }
+}
+
 exports.verifyToken = async (req, res, next) => {
   // 1.check token
   console.log(req.headers.authorization)

@@ -44,6 +44,7 @@ router
   .route("/users/")
   .post(userService.signUp)
   .patch(userService.verifyToken, userService.updateUser)
+  .delete(userService.verifyToken, userService.deleteUser)
 router.route("/users/login").post(userService.singIn)
 
 module.exports = router
