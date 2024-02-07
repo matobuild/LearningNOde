@@ -3,13 +3,16 @@ const errors = require("./errors")
 const jwt = require("jsonwebtoken")
 
 exports.hashPassword = async (plaintextPassword) => {
-  try {
-    const hash = await bcrypt.hash(plaintextPassword, 10)
-    return hash
-  } catch (error) {
-    console.log(error.message)
-    errors.mapError(500, "Internal Server Error", next)
+  if (plaintextPassword) {
+    try {
+      const hash = await bcrypt.hash(plaintextPassword, 10)
+      return hash
+    } catch (error) {
+      console.log(error.message)
+      errors.mapError(500, "Internal Server Error", next)
+    }
   }
+  return null
 }
 
 exports.comparePassword = async (plaintextPassword, hash) => {

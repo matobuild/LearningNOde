@@ -40,7 +40,10 @@ router
     customerService.deleteCustomerById
   )
 
-router.route("/users/").post(userService.signUp)
+router
+  .route("/users/")
+  .post(userService.signUp)
+  .patch(userService.verifyToken, userService.updateUser)
 router.route("/users/login").post(userService.singIn)
 
 module.exports = router

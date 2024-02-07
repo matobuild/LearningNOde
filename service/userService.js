@@ -59,6 +59,7 @@ exports.singIn = async (req, res, next) => {
         const token = await encrypt.generateJWT({
           username: body.username,
           role: response.rows[0].roles,
+          userId: response.rows[0].id,
         })
         return res.status(200).json({
           status: "success",
@@ -70,6 +71,37 @@ exports.singIn = async (req, res, next) => {
           .status(401)
           .json({ status: "fail", data: "Password invalid" })
       }
+    } else {
+      return res.status(400).json({ status: "fail", data: "User not found" })
+    }
+  } catch (error) {
+    console.log(error.message)
+    errors.mapError(500, "Internal Server Error", next)
+  }
+}
+
+exports.updateUser = async (req, res, next) => {
+  try {
+    let body = req.body
+    console.log("BODY", body)
+    let sql = `UPDATE public.users
+    SET first_name=$1, last_name=$2, email=$3, username=$4, user_password=$5, roles=$6
+    WHERE id=$7;`
+    let pwd = await encrypt.hashPassword(body.password)
+    let response = await pool.query(sql, [
+      body.firstname,
+      body.lastname,
+      body.email,
+      body.username,
+      pwd,
+      body.role,
+      req.user.userId,
+    ])
+    if (response.rowCount > 0) {
+      return res.status(200).json({
+        status: "success",
+        data: "Update success",
+      })
     } else {
       return res.status(400).json({ status: "fail", data: "User not found" })
     }
@@ -97,6 +129,7 @@ exports.verifyToken = async (req, res, next) => {
     const data = await encrypt.verifyToken(token)
     req.user = {}
     req.user.role = data.role
+    req.user.userId = data.userId
   } catch (error) {
     console.log(error.message)
     errors.mapError(401, "Token invalid ", next)
