@@ -8,20 +8,37 @@ const router = express.Router()
 
 router
   .route("/customers/")
-  .get(userService.verifyToken, customerService.getAllCustomers)
-  .post(userService.verifyToken, customerService.createCustomer)
+  .get(
+    userService.verifyToken,
+    userService.verifyPermissionRead,
+    customerService.getAllCustomers
+  )
+  .post(
+    userService.verifyToken,
+    userService.verifyPermissionRead,
+    customerService.createCustomer
+  )
 router
   .route("/customers/:id")
   .get(
     userService.verifyToken,
-    // check middleware multiple times
-    customerService.checkID2,
-    customerService.checkID2,
-    customerService.checkID2,
+    // can check middleware multiple times if needed
+    // customerService.checkID2,
+    // customerService.checkID2,
+    // customerService.checkID2,
+    userService.verifyPermissionRead,
     customerService.getCustomerById
   )
-  .patch(userService.verifyToken, customerService.updateCustomerById)
-  .delete(userService.verifyToken, customerService.deleteCustomerById)
+  .patch(
+    userService.verifyToken,
+    userService.verifyPermissionRead,
+    customerService.updateCustomerById
+  )
+  .delete(
+    userService.verifyToken,
+    userService.verifyPermissionWrite,
+    customerService.deleteCustomerById
+  )
 
 router.route("/users/").post(userService.signUp)
 router.route("/users/login").post(userService.singIn)

@@ -17,8 +17,8 @@ exports.signUp = async (req, res, next) => {
     }
 
     let sql = `INSERT INTO public.users 
-    ( first_name, last_name, email,username, user_password)
-    VALUES($1, $2, $3, $4, $5);`
+    ( first_name, last_name, email,username, user_password, roles)
+    VALUES($1, $2, $3, $4, $5, $6);`
     let pwd = await encrypt.hashPassword(body.password)
     let response = await pool.query(sql, [
       body.firstname,
@@ -26,6 +26,7 @@ exports.signUp = async (req, res, next) => {
       body.email,
       body.username,
       pwd,
+      body.role,
     ])
     console.log(response)
     if (response.rowCount > 0) {
@@ -55,7 +56,10 @@ exports.singIn = async (req, res, next) => {
         response.rows[0].user_password
       )
       if (isPwdValid) {
-        const token = await encrypt.generateJWT({ username: body.username })
+        const token = await encrypt.generateJWT({
+          username: body.username,
+          role: response.rows[0].roles,
+        })
         return res.status(200).json({
           status: "success",
           token: token,
@@ -90,10 +94,30 @@ exports.verifyToken = async (req, res, next) => {
 
   // 2. verify token
   try {
-    await encrypt.verifyToken(token)
+    const data = await encrypt.verifyToken(token)
+    req.user = {}
+    req.user.role = data.role
   } catch (error) {
     console.log(error.message)
     errors.mapError(401, "Token invalid ", next)
   }
+  next()
+}
+
+exports.verifyPermissionRead = async (req, res, next) => {
+  const user = req.user
+  if (user.role != "user" && user.role != "admin") {
+    errors.mapError(401, "Permission invalid ", next)
+  }
+
+  next()
+}
+
+exports.verifyPermissionWrite = async (req, res, next) => {
+  const user = req.user
+  if (user.role != "admin") {
+    errors.mapError(401, "Permission invalid ", next)
+  }
+
   next()
 }
